@@ -20,10 +20,21 @@
   <div id="result-banner" class="result-banner"></div>
 </div>
 
-<script src="_lib.js"></script>
-
 <script>
-(function () {
+(async function () {
+  // Cludge for loading a script on ankiweb and ankimobile.
+  var injectScript = (src) => {
+      return new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = src;
+          script.async = true;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+      });
+  };
+  if (typeof parsePinyin === 'undefined') await injectScript('_lib.js');
+
   function buildGabaritoSelective(pinyins, sourceHTML, incorrectSet) {
     return handleCloze(pinyins, sourceHTML, (clozePinyins, ans, _hint) => {
       const txt = addRubyText(clozePinyins, ans).html_parts.join("");
