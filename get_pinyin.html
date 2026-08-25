@@ -1,0 +1,24 @@
+<script src="https://unpkg.com/pinyin-pro"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+<script src="tingli.tsv"></script>
+
+<div id="result" style="white-space: pre-wrap"></div>
+
+<script>
+(async function() {
+  // This is to take a tsv file, then get the pinyin for every sentence in it, assumed to be the second row.
+  const dictResponse = await fetch('https://raw.githubusercontent.com/zh-lx/pinyin-pro/refs/heads/main/packages/data/json/complete.json');
+  const completeDict = await dictResponse.json();
+
+  pinyinPro.addDict(completeDict);
+
+  parsedTsv = Papa.parse(tsvContents);
+
+  for (const row of parsedTsv.data) {
+    const sentence = row[1];
+    row.push(pinyinPro.pinyin(sentence));
+  }
+
+  document.getElementById("result").textContent = Papa.unparse(parsedTsv, {delimiter: "\t"});
+})();
+</script>
