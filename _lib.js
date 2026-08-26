@@ -248,7 +248,7 @@ function parsePinyin(ogPinyinText) {
     ogPinyinText = ogPinyinText.slice(0, sandhiIndex);
   }
 
-  ogPinyinText = ogPinyinText.replace(/[!.,?]/, "");
+  ogPinyinText = ogPinyinText.replace(/[!.,?()]/, "");
   ogPinyinText = ogPinyinText.toLowerCase();
 
   for (const firstSplit of ogPinyinText.split(" ")) {
