@@ -192,7 +192,10 @@ function parseSimplePinyin(pinyinText) {
       if (newFloatingConsonants.endsWith("r")) {
         // The only valid pinyin syllable ending in r is "er" (with varying tones).  If that is not what we have here, 
         // then we need to handle a syllabic final r.
-        if ((prevFloatingConsonants + vowels + newFloatingConsonants).normalize() == "er") {
+        const expectedSyllable = prevFloatingConsonants + vowels + newFloatingConsonants;
+        if (expectedSyllable.length == 2
+          && ES_PT.indexOf(expectedSyllable[0]).indexOf != -1
+          && expectedSyllable[1] == "r") {
           endConsonants = "r";
           newFloatingConsonants = "";
         } else {
