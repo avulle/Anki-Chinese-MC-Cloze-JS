@@ -133,7 +133,6 @@ function parseClozes(pinyins, sourceHTML) {
 }
 
 function parseSimplePinyin(pinyinText) {
-  console.log(pinyinText);
   /** Assumes the provided txt is:
         * non-empty
         * has no spaces
@@ -189,8 +188,6 @@ function parseSimplePinyin(pinyinText) {
     let endConsonants = "";
     let newFloatingConsonants = consonantGroups[i + 1];
     let vowels = vowelGroups[i];
-    console.log("Vowels: " + vowels);
-    console.log("Floating Consonants: " + newFloatingConsonants);
     if (i == vowelGroups.length - 1) {
       if (newFloatingConsonants.endsWith("r")) {
         // The only valid pinyin syllable ending in r is "er" (with varying tones).  If that is not what we have here, 
@@ -199,7 +196,7 @@ function parseSimplePinyin(pinyinText) {
           endConsonants = "r";
           newFloatingConsonants = "";
         } else {
-          endConsonants = newFloatingConsonants.slice(0, newFloatingConsonants.length);
+          endConsonants = newFloatingConsonants.slice(0, newFloatingConsonants.length - 1);
           newFloatingConsonants = "r";
         }
       } else {
