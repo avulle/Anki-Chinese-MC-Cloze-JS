@@ -15,7 +15,6 @@ Retrieved 2026-08-26, License - CC BY-SA 2.5
 <div id="raw-meaning" style="display:none">meaning</div>
 <div id="raw-distratores" style="display:none">恐怕[kǒngpà] | 躺[tǎng] | 聚会[jùhuì] | 方向[fāngxiàng] | 幸福[xìngfú] | 接着[jiēzhe] | 技术[jìshù] | 困[kùn] | 困难[kùnnan] | 正好[zhènghǎo] | 提醒[tíxǐng] | 旅行[lǚxíng] | 激动[jīdòng] | 骄傲[jiāo ào] | 毛[máo] | 节[jié] | 许多[xǔduō] | 顺利[shùnlì] | 职业[zhíyè] | 赚[zhuàn] | 地址[dìzhǐ] | 于是[yúshì] | 收拾[shōushi] | 周围[zhōuwéi] | 爱情[àiqíng] | 尊重[zūnzhòng] | 十分[shífēn] | 教授[jiàoshòu] | 超过[chāoguò] | 寄[jì] | 顺便[shùnbiàn] | 无聊[wúliáo] | 目的[mùdì] | 低[dī] | 剩[shèng] | 复杂[fùzá] | 社会[shèhuì] | 故意[gùyì] | 好处[hǎochu] | 竟然[jìngrán] | 表示[biǎoshì]</div>
 <div id="raw-pinyin">Wǒ shì tā de péngyou.</div>
-<div id="raw-ordem" style="display:none"></div>
 <div id="raw-which-cloze" style="display:none">2</div>
 
 <div id="test-pinyin"></div>
@@ -61,8 +60,6 @@ Retrieved 2026-08-26, License - CC BY-SA 2.5
 
   const ordemEl    = document.getElementById('raw-ordem');
   const ordemPlain = ordemEl ? ordemEl.textContent.trim().toLowerCase() : '';
-  const orderMatters = !(ordemPlain === 'n');
-
   const clozeNumberEl = document.getElementById('raw-which-cloze');
   const clozeNumber = clozeNumberEl ? Number(clozeNumberEl.textContent) : 0;
 
@@ -83,76 +80,28 @@ Retrieved 2026-08-26, License - CC BY-SA 2.5
   let correctCount = 0;
   const incorrectSet = new Set();
 
-  if (orderMatters) {
-    for (const b of blanks) {
-      const el = document.querySelector(`.blank[data-idx="${b.idx}"]`);
-      const optId = state.assignments[b.idx];
-      const chosenText = (id2text[optId] || '').replace(/\s+/g,' ').trim();
+  for (const b of blanks) {
+    const el = document.querySelector(`.blank[data-idx="${b.idx}"]`);
+    const optId = state.assignments[b.idx];
+    const chosenText = (id2text[optId] || '').replace(/\s+/g,' ').trim();
 
-      if (chosenText) {
-        el.dataset.filled='1'; el.dataset.optionId=optId;
-        el.classList.add('filled');
-        el.innerHTML = `<span class="filled-text">${state._rubied_texts[optId]}</span>`;
-      } else {
-        el.dataset.filled='0'; el.classList.add('empty');
-        el.innerHTML = `<span class="placeholder"><b>[...]</b></span>` +
-          (b.hint ? ` <span class="hint">(dica: ${esc(b.hint)})</span>` : '');
-      }
-
-      const isCorrect = norm(chosenText) === norm(b.answer);
-      if (isCorrect) { 
-        correctCount++; 
-        el.classList.add('correct'); 
-        el.innerHTML = `<span class="filled-text">${(b.rubied_answer)}</span>`;
-      }
-      else { incorrectSet.add(b.idx); el.classList.add('incorrect'); }
-    }
-  } else {
-    // Correção por conjunto (ordem NÃO importa)
-    const remaining = {};
-    const displayByNorm = {};
-    for (const b of blanks) {
-      const k = norm(b.answer);
-      remaining[k] = (remaining[k] || 0) + 1;
-      if (!displayByNorm[k]) displayByNorm[k] = b.answer;
-    }
-    for (const b of blanks) {
-      const el = document.querySelector(`.blank[data-idx="${b.idx}"]`);
-      const optId = state.assignments[b.idx];
-      const chosenText = (id2text[optId] || '').replace(/\s+/g,' ').trim();
-
-      if (chosenText) {
-        el.dataset.filled='1'; el.dataset.optionId=optId;
-        el.classList.add('filled');
-        el.innerHTML = `<span class="filled-text">${esc(chosenText)}</span>`;
-      } else {
-        el.dataset.filled='0'; el.classList.add('empty');
-        el.innerHTML = `<span class="placeholder"><b>[...]</b></span>` +
-          (b.hint ? ` <span class="hint">(dica: ${esc(b.hint)})</span>` : '');
-      }
-
-      let ok = false;
-      const k = norm(chosenText);
-      if (chosenText && remaining[k] > 0) { ok = true; remaining[k]--; }
-      if (ok) { correctCount++; el.classList.add('correct'); }
-      else { incorrectSet.add(b.idx); el.classList.add('incorrect'); }
-    }
-
-    // Itens corretos não marcados
-    const missing = [];
-    for (const [k, cnt] of Object.entries(remaining)) {
-      if (cnt > 0) missing.push({ text: displayByNorm[k], count: cnt });
-    }
-    const $corr = document.getElementById('correction');
-    if (missing.length) {
-      $corr.innerHTML =
-        `<div class="gabarito-title">Correct items not selected:</div>
-         <div class="leftovers-pills">${
-           missing.map(m => `<span class="option missing">${esc(m.text)}${m.count>1 ? ' ×'+m.count : ''}</span>`).join(' ')
-         }</div>`;
+    if (chosenText) {
+      el.dataset.filled='1'; el.dataset.optionId=optId;
+      el.classList.add('filled');
+      el.innerHTML = `<span class="filled-text">${state._rubied_texts[optId]}</span>`;
     } else {
-      $corr.innerHTML = '';
+      el.dataset.filled='0'; el.classList.add('empty');
+      el.innerHTML = `<span class="placeholder"><b>[...]</b></span>` +
+        (b.hint ? ` <span class="hint">(dica: ${esc(b.hint)})</span>` : '');
     }
+
+    const isCorrect = norm(chosenText) === norm(b.answer);
+    if (isCorrect) { 
+      correctCount++; 
+      el.classList.add('correct'); 
+      el.innerHTML = `<span class="filled-text">${(b.rubied_answer)}</span>`;
+    }
+    else { incorrectSet.add(b.idx); el.classList.add('incorrect'); }
   }
 
   const total = blanks.length;
@@ -180,7 +129,7 @@ Retrieved 2026-08-26, License - CC BY-SA 2.5
   }
 
   // Gabarito (só quando ordem importa e houve erro)
-  if (orderMatters && incorrectCount > 0) {
+  if (incorrectCount > 0) {
     document.getElementById('correction').innerHTML =
       `<div class="gabarito"><span class="gabarito-title"></span>${buildGabaritoSelective(pinyins, clozeNumber, rawTextHTML, incorrectSet)}</div>`;
   }
