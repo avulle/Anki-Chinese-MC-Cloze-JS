@@ -175,6 +175,11 @@ function parseSimplePinyin(pinyinText) {
     consonantGroups.push("");
   }
 
+  if (consonantGroups.length == 1) {
+    // We almost definitely didn't get any pinyin.  Just return the original text.
+    return [pinyinText];
+  }
+
   // Now we should have a consonantGroups which s 1 longer than vowelGroups.
   if (consonantGroups.length != vowelGroups.length + 1) {
     throw new Error("Yikes, consonants: " + consonantGroups + "\nvowels: " + vowelGroups);
@@ -251,12 +256,14 @@ function parsePinyin(ogPinyinText) {
     ogPinyinText = ogPinyinText.slice(0, sandhiIndex);
   }
 
-  ogPinyinText = ogPinyinText.replace(/[!.,?()]/, "");
+  // Turn everything to lowercase.
   ogPinyinText = ogPinyinText.toLowerCase();
 
+  // Split along spaces and apostrophes, then call parseSimplePinyin on a version of the string 
+  // that has had all non-letter characters stripped out.
   for (const firstSplit of ogPinyinText.split(" ")) {
     for (const secondSplit of firstSplit.split("'")) {
-      for (const pinyin of parseSimplePinyin(secondSplit)) {
+      for (const pinyin of parseSimplePinyin(secondSplit.replace(/\P{L}/ug, ""))) {
         pinyins.push(pinyin);
       }
     }
