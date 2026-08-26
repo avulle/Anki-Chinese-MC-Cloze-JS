@@ -140,6 +140,19 @@ function parseClozes(pinyins, clozeNumber, sourceHTML) {
   return {html, blanks};
 }
 
+function buildGabaritoSelective(pinyins, clozeNumber, sourceHTML, incorrectSet) {
+  return handleCloze(pinyins, sourceHTML, clozeNumber, (clozePinyins, ans, _hint) => {
+    const { final_pinyin_idx, html_parts} = addRubyText(clozePinyins, ans);
+    const hi = incorrectSet.has(0);
+    const txt = html_parts.join("");
+    return {
+      new_idx: final_pinyin_idx,
+      html: hi ? `<span class="solution highlight">${txt}</span>` : `${txt}`
+    }
+  });
+}
+
+
 function parseSimplePinyin(pinyinText) {
   /** Assumes the provided txt is:
         * non-empty

@@ -1,0 +1,238 @@
+.card {
+    font-family: arial;
+    font-size: 20px;
+    text-align: center;
+    color: black;
+    background-color: white;
+}
+.tone1 {color: red;}
+.tone2 {color: green;}
+.tone3 {color: blue;}
+.tone4 {color: purple;}
+.tone5 {color: gray;}
+hr{
+margin-top: 1em;
+}
+#comentario{
+margin-top: 1.5em;
+margin-bottom: 0.5em;
+}
+.cloze {
+    font-weight: bold;
+    color: blue;
+}
+.leftovers-pills{
+font-size:0.6em;
+margin-top: 0px;
+}
+
+.option.missing{
+font-size: 1.25em !important;
+}
+
+.distratorestit{
+margin-top: 0.5em;
+}
+
+.nightMode .cloze {
+    color: lightblue;
+}
+.nightMode .placeholder {
+    color: blue;
+    opacity:  !important;
+}
+.nightMode .blank.incorrect {
+    color: white;
+    background: rgba(255, 90, 90, 1);
+    opacity: 1 !important;
+}
+.nightMode .blank.correct {
+    color: white;
+    background: rgba(46, 250, 30, 1);
+    opacity: 1;
+}
+.nightMode .option {
+color: rgba(0,0,255,0.75) !important;
+}
+
+.nightMode .blank {
+opacity:1 !important;
+background: rgba(255,255,255,1);
+}
+
+.nightMode .text {
+color: black;
+background: rgba(255,255,255,1);
+border-radius: 0.3em !important;
+padding: 8px 12px;
+width:max-content;
+margin: 0 auto;
+}
+
+.nightMode .solution {
+ background: yellow !important;
+}
+.option,
+.text,
+.gabarito,
+.back-extra {
+  width: fit-content;
+}
+
+/* celular (telas pequenas) */
+@media only screen and (max-width: 768px) {
+  .option,
+  .text,
+  .gabarito,
+  .back-extra {
+    width: fit-content;
+    max-width: 95% !important;
+  }
+}
+
+
+
+
+
+
+/* Container */
+#mc-cloze {margin: 0 auto; font-size: 20px;}
+
+/* Texto & lacunas */
+.text {   white-space: pre-wrap; display: inline-block;
+  padding: 20px 20px;
+  border-radius: 0.3em !important;
+  background-color: bisque;
+  font-size: 40px;
+  margin: 0 auto 5px;
+  font-family: "MS Mincho", "ＭＳ 明朝", "Kochi Mincho", "東風明朝", "Hiragino Mincho ProN"; }
+#sentence-meaning {
+  font-size: 20px;
+  padding: 10px 10px;
+  background: rgba(0,0,0,0.15);
+}
+.blank {  }
+.blank.empty .placeholder { opacity: 1; font-weight: bold; color: black;}
+.blank .hint { font-size: 0.8em; opacity: 1; margin-left: 1px; }
+.blank .filled-text { font-weight: bold; color:blue; } /* NEGRITO quando preenchida */
+.blank.correct { background: #BFEE90; }
+.blank.incorrect { background: rgba(231, 76, 60, 0.5); border-color: #c0392b; }
+
+/* Opções (centralizadas) */
+.options-title { font-weight: 600; margin: 0.75em 0 0.5em; text-align: center; }
+.options { gap: 0px; justify-content: center; font-size: 20px}
+
+/* Botão de opção: herda a cor do tema; fundo sem ficar claro no dark */
+.option{
+  padding: 8px 8px;
+  margin: 4px;
+  border-radius: 0.6em !important;
+  cursor: pointer;
+  font-size: 0.8em !important;
+  color: inherit; /* usa a cor do texto atual (preto no claro, branco no escuro) */
+  background: rgba(0,0,0,0.15);
+  border: 1px solid rgba(0,0,0,0.35);
+  font-weight: bold;
+  color: black;
+}
+.option:hover { filter: brightness(0.96); }
+.option:active { transform: translateY(1px); }
+
+/* Gabarito */
+.gabarito-title { margin-top: 14px; margin-bottom: 0.25em; font-weight: 600; color:orange; }
+.gabarito .solution { background: #fff3c4; border-bottom: 0px solid #f1c40f; padding: 0 0px; font-weight: 550; color:green; }
+.gabarito{
+    margin: 0 auto;
+}
+
+/* Back Extra */
+.back-extra { margin-top: 0.5em; margin: 0 auto; font-size: 0.75em;}
+
+/* Compatibilidade com modo noturno nativo do Anki (e dark do SO) */
+@media (prefers-color-scheme: dark) {
+  .option { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.35); color: inherit; }
+  .blank { border-color: rgba(255,255,255,0.6); }
+  .gabarito .solution { background: rgba(255, 231, 158, 0.25); border-color: #f1c40f; }
+}
+/* Alguns builds do Anki aplicam classes diferentes no body; cobrimos todas */
+body.night-mode .option,
+body.nightMode .option,
+body.night_mode .option {
+  background: rgba(255,255,255,1) !important;
+  border-color: rgba(0,0,255,0.45) !important;
+  opacity:1 !important;
+}
+body.night-mode .blank,
+body.nightMode .blank,
+body.night_mode .blank {
+  border-color: rgba(255,255,255,1) !important;
+}
+
+/* Banner de resultado */
+.result-banner { margin: 10px 0 12px; font-weight: 700; }
+.result-ok { color: #26a65b; }       /* verde */
+.result-partial { color: #c0392b; }  /* vermelho */
+.result-fail { color: #c0392b; }     /* vermelho */
+
+/* Dark mode: cores continuam legíveis sobre fundo escuro */
+@media (prefers-color-scheme: dark) {
+  .result-ok { color: #2ecc71; }
+  .result-partial, .result-fail { color: #e74c3c; }
+}
+body.night-mode .result-ok,
+body.nightMode .result-ok,
+body.night_mode .result-ok { color: #2ecc71 !important; }
+body.night-mode .result-partial,
+body.nightMode .result-partial,
+body.night_mode .result-partial,
+body.night-mode .result-fail,
+body.nightMode .result-fail,
+body.night_mode .result-fail { color: #e74c3c !important; }
+
+.option.missing, .option.leftover {
+  display: inline-flex;     /* se ajusta ao conteúdo e ainda permite wrap */
+  flex-wrap: wrap;          /* quebra linha só quando precisar */
+  gap: 0;                   /* seu gap */
+  justify-content: center;  /* centraliza as caixas */
+  margin: 0 auto 5px;
+}
+
+/* Cada caixinha dentro do contêiner */
+.option.missing, .option.leftover > * {
+  flex: 0 0 auto;           /* não estica e não encolhe */
+  white-space: nowrap;      /* NÃO quebra dentro da caixinha */
+  hyphens: none;            /* impede hifenização automática */
+  overflow-wrap: anywhere;  /* só quebra palavra gigante como último recurso, sem '-' */
+}
+
+
+/* Quando agrupado por lacuna, o container vira bloco vertical */
+.options.grouped { 
+  display: block;
+}
+
+/* Wrapper de cada grupo (Lacuna N) */
+.options-group {
+  margin: 0.5em 0 0.35em;
+}
+
+/* Título do grupo */
+.options-group-title {
+  font-weight: 600;
+  margin: 0.25em 0 0.35em;
+  text-align: center;
+}
+
+/* Linha de opções de cada grupo */
+.options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0px;                 /* usa o mesmo gap que você já prefere */
+  justify-content: center;
+}
+
+
+
+
+
+
