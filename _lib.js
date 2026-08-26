@@ -132,15 +132,19 @@ function parseClozes(pinyins, sourceHTML) {
   return {html, blanks};
 }
 
-function parseSimplyPinyinNoSyllabicR(pinyinText) {
+function parseSimplePinyin(pinyinText) {
+  console.log(pinyinText);
   /** Assumes the provided txt is:
         * non-empty
         * has no spaces
         * has no apostrophes
         * has no punctuation
-        * if it has a final r, it functions as a consonant
         * is all lowercase.
     */
+  if (pinyinText == "") {
+    return [];
+  }
+
   let consonantGroups = []
   let vowelGroups = []
   let currentStart = 0;
@@ -173,10 +177,8 @@ function parseSimplyPinyinNoSyllabicR(pinyinText) {
   }
 
   // Now we should have a consonantGroups which s 1 longer than vowelGroups.
-
-  // Let's take care of the easy case right now.
-  if (vowelGroups.length == 1) {
-    return [consonantGroups[0] + vowelGroups[0] + consonantGroups[1]];
+  if (consonantGroups.length != vowelGroups.length + 1) {
+    throw new Error("Yikes, consonants: " + consonantGroups + "\nvowels: " + vowelGroups);
   }
 
   // We know that every pinyin necessarily contains a vowel (because we have ruled out syllabic rs), so we're going to
@@ -186,9 +188,25 @@ function parseSimplyPinyinNoSyllabicR(pinyinText) {
   for (let i = 0; i < vowelGroups.length; i++) {
     let endConsonants = "";
     let newFloatingConsonants = consonantGroups[i + 1];
+    let vowels = vowelGroups[i];
+    console.log("Vowels: " + vowels);
+    console.log("Floating Consonants: " + newFloatingConsonants);
     if (i == vowelGroups.length - 1) {
-      // If we're the last syllable, those consonants are obviously ours.
-      endConsonants = newFloatingConsonants;
+      if (newFloatingConsonants.endsWith("r")) {
+        // The only valid pinyin syllable ending in r is "er" (with varying tones).  If that is not what we have here, 
+        // then we need to handle a syllabic final r.
+        if ((prevFloatingConsonants + vowels + newFloatingConsonants).normalize() == "er") {
+          endConsonants = "r";
+          newFloatingConsonants = "";
+        } else {
+          endConsonants = newFloatingConsonants.slice(0, newFloatingConsonants.length);
+          newFloatingConsonants = "r";
+        }
+      } else {
+        // If we're the last syllable, those consonants are obviously ours.
+        endConsonants = newFloatingConsonants;
+        newFloatingConsonants = "";
+      }
     } else if (newFloatingConsonants == "n") {
       // We pass.
     } else if (newFloatingConsonants == "ng") {
@@ -209,36 +227,18 @@ function parseSimplyPinyinNoSyllabicR(pinyinText) {
       newFloatingConsonants = newFloatingConsonants.slice(1);
     }
 
-    pinyins.push(prevFloatingConsonants + vowelGroups[i] + endConsonants);
+    pinyins.push(prevFloatingConsonants + vowels + endConsonants);
     prevFloatingConsonants = newFloatingConsonants;
   }
 
+  if (prevFloatingConsonants.length > 0) {
+    if (prevFloatingConsonants != "r") 
+      throw new Error("Found a syllabic consonant other than r: " + prevFloatingConsonants);
+    // We found a syllabic r.
+    pinyins.push("r");
+  }
+
   return pinyins;
-}
-
-function parseSimplePinyin(pinyinText) {
-  /** Assumes no spaces, no ' apostrophes, and all lowercase. */
-  // First thing we want to do is break this down into consonant - vowels - consonant - vowels - consonant grouping.
-  if (pinyinText == "") {
-    return [];
-  }
-
-  // Handle final r.
-  // r at the end of a pinyin word, if it is preceded by anything an e sound, it's a vowel, and it is its own
-  // character.
-  if (pinyinText[pinyinText.length - 1] == 'r') {
-    if (pinyinText.length == 1) {
-      return ["r"];
-    }
-
-    if (ES_PT.indexOf(pinyinText[pinyinText.length - 2]) == -1) {
-      let pinyins = parseSimplyPinyinNoSyllabicR(pinyinText.slice(0, pinyinText.length - 1));
-      pinyins.push("r");
-      return pinyins;
-    }
-  }
-
-  return parseSimplyPinyinNoSyllabicR(pinyinText);
 }
 
 function parsePinyin(ogPinyinText) {
