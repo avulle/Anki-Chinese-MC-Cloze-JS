@@ -16,7 +16,7 @@ const isVowelPT = (ch) => VOWELS_PT.indexOf(ch) !== -1;
 const countConsonantsPT = (t)=>{let n=0; for(const c of t||'') if(isLetter(c)&&!isVowelPT(c)) n++; return n;};
 const countVowelsPT = (t)=>{let n=0; for(const c of t||'') if(isVowelPT(c)) n++; return n;};
 
-const CLOZE_RX = new RegExp('\\{\\{c\\d+::(.*?)(?:::([^}]*))?\\}\\}', 'g');
+const CLOZE_RX = new RegExp('\\{\\{c(\\d+)::(.*?)(?:::([^}]*))?\\}\\}', 'g');
 const normalizeChoiceText = (s) => (s || '').replace(/\s+/g, ' ').trim();
 const norm = (s)=> (s||'').replace(/\s+/g,' ').trim().toLowerCase();
 
@@ -75,58 +75,66 @@ function addRubyText(pinyins, text) {
   return {final_pinyin_idx: charIdx, html_parts: htmlParts};
 }
 
-function handleCloze(pinyins, sourceHTML, calledOnCloze) {
-  // We're expecting input that has only one cloze.
-  // This means that bits here should be ["stuff before the cloze", "cloze contents", "hint", "stuff after the cloze"]
-  let bits = sourceHTML.split(CLOZE_RX);
+function handleCloze(pinyins, sourceHTML, clozeNumber, calledOnCloze) {
+  // Format of this list will be:
+  // [souceText1, 
+  //  clozeNumber1, clozedText1, hint1, 
+  //  sourceText2, 
+  //  clozeNumber2, clozedText2, hint2,
+  //  sourceText3...]
+  let rawSplit = sourceHTML.split(CLOZE_RX);
 
-  if (bits.length != 4) {
-    return "Bad Cloze, should have only one cloze";
+  if (rawSplit.length % 4 != 1) {
+    throw new Error("Split function returned nonsense: " + rawSplit);
   }
 
-  const start = bits[0];
-  const ans = bits[1];
-  const hint = bits[2];
-  const end = bits[3];
-
-  let htmlParts = [];
-
-  let charIdx = 0;
-
-  const startRubyText = addRubyText(pinyins, start);
-  charIdx = startRubyText.final_pinyin_idx;
-  for (rubyHtmlPart of startRubyText.html_parts) {
-    htmlParts.push(rubyHtmlPart);
-  }
-
-  const startPinyinIdx = charIdx;
-
-  for (let i = 0; i < ans.length; i++) {
-    if (isChineseCharacter(ans[i]) && charIdx < pinyins.length) {
-      // We're not going to ruby the answer, but we still want to increment the charIdx.
-      charIdx++;
+  // Repackage bits into a more coherent format:
+  var i = 0;
+  const processedSplit = []
+  while (i < rawSplit.length) {
+    if (i % 4 == 0) {
+      processedSplit.push({ sourceText: rawSplit[i] });
+      i++;
+    } else {
+      if (rawSplit[i] == clozeNumber) {
+        processedSplit.push({ cloze: { clozeNumber: rawSplit[i], clozedText: rawSplit[i + 1], hint: rawSplit[i+2] } });
+      } else {
+        processedSplit.push({ sourceText: rawSplit[i + 1] });
+      }
+      i+=3;
     }
   }
 
-  htmlParts.push(calledOnCloze(pinyins.slice(startPinyinIdx, charIdx), ans, hint));
-  
-  for (rubyHtmlPart of addRubyText(pinyins.slice(charIdx), end).html_parts) {
-    htmlParts.push(rubyHtmlPart);
+  let charIdx = 0;
+  let htmlParts = [];
+  for(const {sourceText, cloze} of processedSplit) {
+    if (cloze) {
+      let {new_idx, html} = calledOnCloze(pinyins.slice(charIdx), cloze.clozedText, cloze.hint);
+      charIdx += new_idx;
+      htmlParts.push(html);
+    } else {
+      let {final_pinyin_idx, html_parts} = addRubyText(pinyins.slice(charIdx), sourceText);
+      charIdx += final_pinyin_idx;
+      htmlParts.push(...html_parts);
+    }
   }
-  
+
   const html = htmlParts.join("");
 
   return html;
 }
 
-function parseClozes(pinyins, sourceHTML) {
+function parseClozes(pinyins, clozeNumber, sourceHTML) {
   const blanks = [];
-  const html = handleCloze(pinyins, sourceHTML, (clozePinyins, ans, hint) => {
+  const html = handleCloze(pinyins, sourceHTML, clozeNumber, (clozePinyins, ans, hint) => {
     const ans_idx = 0;
     const a = untrim(ans);
-    const rubiedAnswer = addRubyText(clozePinyins, ans).html_parts.join("");
+    let { final_pinyin_idx, html_parts} = addRubyText(clozePinyins, ans);
+    const rubiedAnswer = html_parts.join("");
     blanks.push({ idx: ans_idx, rubied_answer: rubiedAnswer, answer: a, hint: untrim(hint || '') });
-    return `<span class="blank" data-idx="${ans_idx}" data-answer="${esc(a)}" data-filled="0"></span>`;
+    return {
+      new_idx: final_pinyin_idx, 
+      html: `<span class="blank" data-idx="${ans_idx}" data-answer="${esc(a)}" data-filled="0"></span>` };
   });
 
   return {html, blanks};

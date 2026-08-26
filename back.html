@@ -1,10 +1,11 @@
 <div style="display:none">{{cloze:ClozeSentence}}</div>
 
-<div id="raw-text" style="display:none">我是他{{c1::的}}朋友。</div>
+<div id="raw-text" style="display:none">我是他{{c1::的}}{{c2::朋友}}。</div>
 <div id="raw-meaning" style="display:none">meaning</div>
-<div id="raw-distratores" style="display:none">的[de] | 我[wǒ] | 你[nǐ] | 是[shì] | 了[le] | 不[bù] | 在[zài] | 他[tā] | 我们[wǒmen] | 好[hǎo] | 有[yǒu] | 这[zhè] | 会[huì] | 吗[ma] | 什么[shénme] | 说[shuō] | 她[tā] | 想[xiǎng] | 一[yī] | 很[hěn] | 人[rén] | 那[nà] | 来[lái] | 都[dōu] | 个[ge] | 能[néng] | 去[qù] | 和[hé] | 做[zuò] | 上[shang] | 没有[méiyǒu] | 看[kàn] | 怎么[zěnme] | 现在[xiànzài] | 点[diǎn] | 呢[ne] | 太[tài] | 里[li] | 听[tīng] | 谁[shéi] | 多[duō]</div>
+<div id="raw-distratores" style="display:none">恐怕[kǒngpà] | 躺[tǎng] | 聚会[jùhuì] | 方向[fāngxiàng] | 幸福[xìngfú] | 接着[jiēzhe] | 技术[jìshù] | 困[kùn] | 困难[kùnnan] | 正好[zhènghǎo] | 提醒[tíxǐng] | 旅行[lǚxíng] | 激动[jīdòng] | 骄傲[jiāo ào] | 毛[máo] | 节[jié] | 许多[xǔduō] | 顺利[shùnlì] | 职业[zhíyè] | 赚[zhuàn] | 地址[dìzhǐ] | 于是[yúshì] | 收拾[shōushi] | 周围[zhōuwéi] | 爱情[àiqíng] | 尊重[zūnzhòng] | 十分[shífēn] | 教授[jiàoshòu] | 超过[chāoguò] | 寄[jì] | 顺便[shùnbiàn] | 无聊[wúliáo] | 目的[mùdì] | 低[dī] | 剩[shèng] | 复杂[fùzá] | 社会[shèhuì] | 故意[gùyì] | 好处[hǎochu] | 竟然[jìngrán] | 表示[biǎoshì]</div>
 <div id="raw-pinyin">Wǒ shì tā de péngyou.</div>
 <div id="raw-ordem" style="display:none"></div>
+<div id="raw-which-cloze" style="display:none">1</div>
 
 <div id="test-pinyin"></div>
 
@@ -35,7 +36,7 @@
   };
   if (typeof parsePinyin === 'undefined') await injectScript('_lib.js');
 
-  function buildGabaritoSelective(pinyins, sourceHTML, incorrectSet) {
+  function buildGabaritoSelective(pinyins, clozeNumber, sourceHTML, incorrectSet) {
     return handleCloze(pinyins, sourceHTML, (clozePinyins, ans, _hint) => {
       const txt = addRubyText(clozePinyins, ans).html_parts.join("");
       const hi = incorrectSet.has(0);
@@ -59,6 +60,9 @@
   const ordemPlain = ordemEl ? ordemEl.textContent.trim().toLowerCase() : '';
   const orderMatters = !(ordemPlain === 'n');
 
+  const clozeNumberEl = document.getElementById('raw-which-cloze');
+  const clozeNumber = clozeNumberEl ? Number(clozeNumberEl.textContent) : 0;
+
   const key = rawTextPlain + countConsonantsPT(rawTextPlain) + countVowelsPT(rawDistrPlain);
   const snapshot = hash(rawTextPlain + '||' + rawDistrPlain);
 
@@ -67,7 +71,7 @@
   if (state && state.snapshot !== snapshot) { sessionStorage.removeItem(key); state = null; }
   if (!state) state = { snapshot, optionsOrder: [], assignments: {}, _texts: {}, _frontToken:'', _lastBackToken:'' };
 
-  const { html, blanks } = parseClozes(pinyins, rawTextHTML);
+  const { html, blanks } = parseClozes(pinyins, clozeNumber, rawTextHTML);
   document.getElementById('rendered-text').innerHTML = html || esc(rawTextHTML);
 
   const id2text = state._texts || {};
@@ -175,7 +179,7 @@
   // Gabarito (só quando ordem importa e houve erro)
   if (orderMatters && incorrectCount > 0) {
     document.getElementById('correction').innerHTML =
-      `<div class="gabarito"><span class="gabarito-title"></span>${buildGabaritoSelective(pinyins, rawTextHTML, incorrectSet)}</div>`;
+      `<div class="gabarito"><span class="gabarito-title"></span>${buildGabaritoSelective(pinyins, clozeNumber, rawTextHTML, incorrectSet)}</div>`;
   }
 
   // Fim do ciclo
