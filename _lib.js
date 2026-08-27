@@ -91,13 +91,18 @@ function handleCloze(pinyins, sourceHTML, clozeNumber, calledOnCloze) {
   // Repackage bits into a more coherent format:
   var i = 0;
   const processedSplit = []
+  var clozeFound  = false;
   while (i < rawSplit.length) {
     if (i % 4 == 0) {
       processedSplit.push({ sourceText: rawSplit[i] });
       i++;
     } else {
       if (rawSplit[i] == clozeNumber) {
+        if (clozeFound) {
+          return "Cloze text has duplicate entries for c" + clozeNumber;
+        }
         processedSplit.push({ cloze: { clozeNumber: rawSplit[i], clozedText: rawSplit[i + 1], hint: rawSplit[i+2] } });
+        clozeFound = true;
       } else {
         processedSplit.push({ sourceText: rawSplit[i + 1] });
       }
