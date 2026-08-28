@@ -88,7 +88,7 @@ function handleCloze(pinyins, sourceHTML, clozeNumber, calledOnCloze) {
     throw new Error("Split function returned nonsense: " + rawSplit);
   }
 
-  // Repackage bits into a more coherent format:
+  // Repackage rawSplit into a usable format.
   var i = 0;
   const processedSplit = []
   var clozeFound  = false;
@@ -98,12 +98,10 @@ function handleCloze(pinyins, sourceHTML, clozeNumber, calledOnCloze) {
       i++;
     } else {
       if (rawSplit[i] == clozeNumber) {
-        if (clozeFound) {
-          return "Cloze text has duplicate entries for c" + clozeNumber;
-        }
         processedSplit.push({ cloze: { clozeNumber: rawSplit[i], clozedText: rawSplit[i + 1], hint: rawSplit[i+2] } });
         clozeFound = true;
       } else {
+        // Not for us, treat it as normal text.
         processedSplit.push({ sourceText: rawSplit[i + 1] });
       }
       i+=3;
@@ -131,15 +129,15 @@ function handleCloze(pinyins, sourceHTML, clozeNumber, calledOnCloze) {
 
 function parseClozes(pinyins, clozeNumber, sourceHTML) {
   const blanks = [];
+  var ans_idx = 0;
   const html = handleCloze(pinyins, sourceHTML, clozeNumber, (clozePinyins, ans, hint) => {
-    const ans_idx = 0;
     const a = untrim(ans);
     let { final_pinyin_idx, html_parts} = addRubyText(clozePinyins, ans);
     const rubiedAnswer = html_parts.join("");
     blanks.push({ idx: ans_idx, rubied_answer: rubiedAnswer, answer: a, hint: untrim(hint || '') });
     return {
       new_idx: final_pinyin_idx, 
-      html: `<span class="blank" data-idx="${ans_idx}" data-answer="${esc(a)}" data-filled="0"></span>` };
+      html: `<span class="blank" data-idx="${ans_idx++}" data-answer="${esc(a)}" data-filled="0"></span>` };
   });
 
   return {html, blanks};
