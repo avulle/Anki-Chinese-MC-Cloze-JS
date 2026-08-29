@@ -1,24 +1,129 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+</head>
+
 <script src="https://unpkg.com/pinyin-pro"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-<script src="tingli.tsv"></script>
-
-<div id="result" style="white-space: pre-wrap"></div>
 
 <script>
+const CLOZE_RX = new RegExp('\\{\\{c(\\d+)::(.*?)(?:::([^}]*))?\\}\\}', 'g');
+
+function unClozeSentence(clozeSentence) {
+  // Format of this list will be:
+  // [souceText1, 
+  //  clozeNumber1, clozedText1, hint1, 
+  //  sourceText2, 
+  //  clozeNumber2, clozedText2, hint2,
+  //  sourceText3...]
+  let rawSplit = clozeSentence.split(CLOZE_RX);
+
+  if (rawSplit.length % 4 != 1) {
+    throw new Error("Split function returned nonsense: " + rawSplit);
+  }
+
+  const clozedElements = new Map();
+  const sentenceParts = []
+  var i = 0;
+  while (i < rawSplit.length) {
+    if (i % 4 == 0) {
+      sentenceParts.push(rawSplit[i]);
+      i++;
+    } else {
+      const clozeNumber = rawSplit[i];
+      const clozedText = rawSplit[i + 1];
+      const hint = rawSplit[i + 2];
+      sentenceParts.push(clozedText);
+      if (clozedElements.has(clozedText)) {
+        existingElement = clozedElements.get(clozedText);
+        if (clozeNumber != existingElement.clozeNumber || hint != existingElement.hint) {
+          return { wouldNotBeReconstructible: true };
+        }
+      } else {
+        clozedElements.set(clozedText, {clozeNumber, hint});
+      }
+      i+=3;
+    }
+  }
+
+  return { wouldNotBeReconstructible: false, totalClozes: (rawSplit.length - 1)/ 4, clozedElements, sentence: sentenceParts.join("") };
+}
+
+function reClozeSentence(clozedElements, updatedSentence) {
+  for (const [clozedText, {clozeNumber, hint}] of clozedElements.entries()) {
+    updatedSentence = updatedSentence.replaceAll(clozedText, "{{c" + clozeNumber + "::" + clozedText + "}}");
+  }
+  return updatedSentence;
+}
+
+function downloadFile(output) {
+  const outputTsv = Papa.unparse(output, {delimiter: "\t"});
+
+  var data = new Blob([outputTsv], {type: 'text/plain'});
+
+  var a = document.createElement("a");
+  var url = URL.createObjectURL(data, {type: "charset-utf-8"});
+  a.href = url;
+  a.download = "output.tsv";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function() {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+  }, 0);
+
+}
+
 (async function() {
-  // This is to take a tsv file, then get the pinyin for every sentence in it, assumed to be the second row.
+  // Get the complete dictionary from github.
   const dictResponse = await fetch('https://raw.githubusercontent.com/zh-lx/pinyin-pro/refs/heads/main/packages/data/json/complete.json');
   const completeDict = await dictResponse.json();
+  // Fetch our source tsv file from firefox's localhost proxy.
+  const tingliFile = await fetch('https://firefox2.localhost/source.tsv');
+  const tingliFileText = await tingliFile.text();
+
+  parsedTsv = Papa.parse(tingliFileText, { comments: "#", delimiter: "\t" });
 
   pinyinPro.addDict(completeDict);
 
-  parsedTsv = Papa.parse(tsvContents);
-
+  var emptyRowCount = 0;
   for (const row of parsedTsv.data) {
-    const sentence = row[1];
-    row.push(pinyinPro.pinyin(sentence));
+    const clozeSentence = row[1];
+    if (clozeSentence === undefined) {
+      console.log(row);
+      emptyRowCount++;
+      continue;
+    }
+    const {wouldNotBeReconstructible, totalClozes, clozedElements, sentence} = unClozeSentence(clozeSentence);
+    if (wouldNotBeReconstructible) {
+      console.log(sentence);
+      console.log(row);
+      console.log("WouldNotBeReconstructible");
+      row[14] += " WouldNotBeReconstructible";
+      continue;
+    }
+    if (sentence != row[2]) {
+      console.log(sentence);
+      console.log(row);
+      console.log("MalformedClozeSentence");
+      row[14] += " MalformedClozeSentence";
+      continue;
+    }
+    const segmentedSentence = pinyinPro.segment(sentence, { format: pinyinPro.OutputFormat.ZhString });
+
+    const newClozeSentence = reClozeSentence(clozedElements, segmentedSentence);
+    if ((clozeSentence.split(CLOZE_RX).length - 1) / 4 != totalClozes) {
+      console.log(totalClozes);
+      console.log(clozeSentence);
+      console.log(segmentedSentence);
+      console.log(newClozeSentence);
+      throw new Error("Different number of clozes before and after");
+    }
+
+    row.push(newClozeSentence);
+    row.push(segmentedSentence);
   }
 
-  document.getElementById("result").textContent = Papa.unparse(parsedTsv, {delimiter: "\t"});
+  downloadFile(parsedTsv);
 })();
 </script>
