@@ -12,10 +12,10 @@ Retrieved 2026-08-26, License - CC BY-SA 2.5
 <div style="display:none">{{cloze:ClozeSentence}}</div>
 
 
-<div id="raw-text" style="display:none">他{{c1::又}}高{{c1::又}}壮。</div>
+<div id="raw-text" style="display:none">访问者 对 学生 们 {{c1::流利::形容词}} 的 英语 感到 惊讶 。</div>
 <div id="raw-meaning" style="display:none">meaning</div>
 <div id="raw-distratores" style="display:none">恐怕[kǒngpà] | 躺[tǎng] | 聚会[jùhuì] | 方向[fāngxiàng] | 幸福[xìngfú] | 接着[jiēzhe] | 技术[jìshù] | 困[kùn] | 困难[kùnnan] | 正好[zhènghǎo] | 提醒[tíxǐng] | 旅行[lǚxíng] | 激动[jīdòng] | 骄傲[jiāo ào] | 毛[máo] | 节[jié] | 许多[xǔduō] | 顺利[shùnlì] | 职业[zhíyè] | 赚[zhuàn] | 地址[dìzhǐ] | 于是[yúshì] | 收拾[shōushi] | 周围[zhōuwéi] | 爱情[àiqíng] | 尊重[zūnzhòng] | 十分[shífēn] | 教授[jiàoshòu] | 超过[chāoguò] | 寄[jì] | 顺便[shùnbiàn] | 无聊[wúliáo] | 目的[mùdì] | 低[dī] | 剩[shèng] | 复杂[fùzá] | 社会[shèhuì] | 故意[gùyì] | 好处[hǎochu] | 竟然[jìngrán] | 表示[biǎoshì]</div>
-<div id="raw-pinyin">Tā yòu gāo yòu zhuàng.</div>
+<div id="raw-pinyin">fǎng wèn zhě duì xué shēng men liú lì de yīng yǔ gǎn dào jīng yà</div>
 <div id="raw-which-cloze" style="display:none">1</div>
 
 <div id="test-pinyin"></div>
@@ -57,8 +57,7 @@ Retrieved 2026-08-26, License - CC BY-SA 2.5
   const clozeNumberEl = document.getElementById('raw-which-cloze');
   const clozeNumber = clozeNumberEl ? Number(clozeNumberEl.textContent) : 0;
 
-  const key = rawTextPlain + countConsonantsPT(rawTextPlain) + countVowelsPT(rawDistrPlain);
-  const snapshot = hash(rawTextPlain + '||' + rawDistrPlain);
+  const key = rawTextPlain + countConsonantsPT(rawTextPlain) + countVowelsPT(rawDistrPlain); const snapshot = hash(rawTextPlain + '||' + rawDistrPlain);
 
   // ===== Estado + reset por ciclo =====
   let state = null;
@@ -89,9 +88,9 @@ Retrieved 2026-08-26, License - CC BY-SA 2.5
   for (const b of blanks) {
     const el = document.querySelector(`.blank[data-idx="${b.idx}"]`);
     if (!el) continue;
+    bracketContent = b.hint ? esc(b.hint) : "...";
     el.classList.add('empty');
-    el.innerHTML = `<span class="placeholder"><b>[...]</b></span>` +
-      (b.hint ? ` <span class="hint">(dica: ${esc(b.hint)})</span>` : '');
+    el.innerHTML = `<span class="placeholder"><b>[${bracketContent}]</b></span>`;
   }
 
   // ===== Opções (modo plano OU agrupado por lacuna) =====
